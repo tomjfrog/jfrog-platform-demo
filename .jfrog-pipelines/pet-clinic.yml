@@ -71,7 +71,7 @@
          configuration:
            releaseName: pet-clinic
            integrations:
-             - name: k8s_petclinic #SolEngUS
+             - name: tomj_gke_cluster #SolEng-Dev GCP
            inputResources:
              - name: PetClinicHelmChart
            flags: '--namespace=default --force'
