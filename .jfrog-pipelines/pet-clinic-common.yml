@@ -2,10 +2,10 @@ resources:
   - name: PetClinicProjectGitRepo
     type: GitRepo
     configuration:
-      gitProvider: Github_SolEng
-      path: jfrog/SolEngDemo
+      gitProvider: Github_tomjfrog
+      path: tomjfrog/jfrog-platform-demo
       branches:
-        include: pet-clinic-project
+        include: main
   - name: ConfigServerBuildInfo
     type: BuildInfo
     configuration:
