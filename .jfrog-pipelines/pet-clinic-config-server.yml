@@ -144,7 +144,7 @@ pipelines:
         configuration:
           releaseName: config-server
           integrations:
-            - name: K8S_SA #SolEngUS
+            - name: tomj_gke_cluster #SolEngUS
           inputResources:
             - name: PetClinicConfigServerHelmChart
           flags: '--namespace default --force'

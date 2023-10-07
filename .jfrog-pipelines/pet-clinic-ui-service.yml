@@ -150,7 +150,7 @@ pipelines:
         configuration:
           releaseName: ui-service
           integrations:
-            - name: K8S_SA #SolEngUS
+            - name: tomj_gke_cluster #SolEngUS
           inputResources:
             - name: PetClinicUIServiceHelmChart
           flags: '--namespace default --force'

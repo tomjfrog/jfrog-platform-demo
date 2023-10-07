@@ -148,7 +148,7 @@ pipelines:
         configuration:
           releaseName: customers-service
           integrations:
-            - name: K8S_SA #SolEngUS
+            - name: tomj_gke_cluster #SolEngUS
           inputResources:
             - name: PetClinicCustomersServiceHelmChart
           flags: '--namespace default --force'

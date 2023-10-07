@@ -46,7 +46,7 @@ pipelines:
             - name: PetClinicProjectGitRepo
               trigger: false
           integrations:
-            - name: K8S_SA
+            - name: tomj_gke_cluster
           releaseName: goci-example
           chartPath: Samples/jfrog-pipelines-jenkins-example/chart/goci-example/
           flags: --debug
