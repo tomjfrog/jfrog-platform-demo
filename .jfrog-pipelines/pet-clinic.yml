@@ -2,20 +2,20 @@
    - name: PetClinicHelmChart
      type: HelmChart
      configuration:
-       sourceArtifactory: ArtifactoryUnified
+       sourceArtifactory: jfrog_cloud
        repository: helm-local
        chart: pet-clinic
        version: '0.1.${run_number}'
    - name: PetClinicHelmBuildInfo
      type: BuildInfo
      configuration:
-       sourceArtifactory: ArtifactoryUnified
-       buildName: SampleApp
+       sourceArtifactory: jfrog_cloud
+       buildName: petclinic_microservices_helm
        buildNumber: 1
    - name: PetClinicPromotedHelmChart
      type: HelmChart
      configuration:
-       sourceArtifactory: ArtifactoryUnified
+       sourceArtifactory: jfrog_cloud
        repository: helm-prod-local
        chart: pet-clinic
        version: '0.1.${run_number}'
@@ -25,7 +25,7 @@
        - name: helm_build
          type: HelmPublish
          configuration:
-           chartPath: Samples/pet-clinic-project/pet-clinic/
+           chartPath: helm/
            autoPublishBuildInfo: true
            flags: "-u"
            inputResources:
@@ -51,7 +51,7 @@
              - helm init --client-only --skip-refresh
              - helm repo rm stable
              - helm repo add stable https://charts.helm.sh/stable
-             - pushd $res_PetClinicProjectGitRepo_resourcePath/Samples/pet-clinic-project/pet-clinic
+             - pushd $res_PetClinicProjectGitRepo_resourcePath/helm
              #- add_pipeline_variables triggerBuildInfoName="${res_myBuildInfo_buildName}"
              #- add_pipeline_variables triggerBuildInfoNumber="${res_myBuildInfo_buildNumber}"
              #- sed -i "s/docker.artifactory/docker.artifactory-unified.soleng-us.jfrog.team/" values.yaml
@@ -112,7 +112,7 @@
              - name: VisitsServiceDockerImagePromotedBuildInfo
                trigger: false
            integrations:
-             - name: ArtifactoryUnified
+             - name: jfrog_cloud
          execution:
            onStart:
              - echo "testing pet clinic application" #$latest_docker_ver
@@ -122,18 +122,18 @@
              - if curl -Is "http://$pod_ip:8080/index.html"; then add_run_variables dockerAppStatus="pass"; else add_run_variables dockerAppStatus="fail"; fi
            onComplete: #always
              - echo "pet clinic image status is $dockerAppStatus"
-             - curl -u ${int_ArtifactoryUnified_user}:${int_ArtifactoryUnified_apikey} --header "Content-Type:application/json" --request PATCH  ${int_ArtifactoryUnified_url}/api/metadata/docker-prod-local/pet_clinic_config_server_docker_image/${res_ConfigServerDockerImagePromotedBuildInfo_buildNumber} --data '{"props":{"integrationtest":"passed"}}'
-             - curl -u ${int_ArtifactoryUnified_user}:${int_ArtifactoryUnified_apikey} --header "Content-Type:application/json" --request PATCH  ${int_ArtifactoryUnified_url}/api/metadata/docker-prod-local/pet_clinic_discovery_server_docker_image/${res_DiscoveryServerDockerImagePromotedBuildInfo_buildNumber} --data '{"props":{"integrationtest":"passed"}}'
-             - curl -u ${int_ArtifactoryUnified_user}:${int_ArtifactoryUnified_apikey} --header "Content-Type:application/json" --request PATCH  ${int_ArtifactoryUnified_url}/api/metadata/docker-prod-local/pet_clinic_customers_service_docker_image/${res_CustomersServiceDockerImagePromotedBuildInfo_buildNumber} --data '{"props":{"integrationtest":"passed"}}'
-             - curl -u ${int_ArtifactoryUnified_user}:${int_ArtifactoryUnified_apikey} --header "Content-Type:application/json" --request PATCH  ${int_ArtifactoryUnified_url}/api/metadata/docker-prod-local/pet_clinic_ui_service_docker_image/${res_UIServiceDockerImagePromotedBuildInfo_buildNumber} --data '{"props":{"integrationtest":"passed"}}'
-             - curl -u ${int_ArtifactoryUnified_user}:${int_ArtifactoryUnified_apikey} --header "Content-Type:application/json" --request PATCH  ${int_ArtifactoryUnified_url}/api/metadata/docker-prod-local/pet_clinic_vets_service_docker_image/${res_VetsServiceDockerImagePromotedBuildInfo_buildNumber} --data '{"props":{"integrationtest":"passed"}}'
-             - curl -u ${int_ArtifactoryUnified_user}:${int_ArtifactoryUnified_apikey} --header "Content-Type:application/json" --request PATCH  ${int_ArtifactoryUnified_url}/api/metadata/docker-prod-local/pet_clinic_visits_service_docker_image/${res_VisitsServiceDockerImagePromotedBuildInfo_buildNumber} --data '{"props":{"integrationtest":"passed"}}'
+             - curl -u ${int_jfrog_cloud_user}:${int_jfrog_cloud_apikey} --header "Content-Type:application/json" --request PATCH  ${int_jfrog_cloud_url}/api/metadata/docker-prod-local/pet_clinic_config_server_docker_image/${res_ConfigServerDockerImagePromotedBuildInfo_buildNumber} --data '{"props":{"integrationtest":"passed"}}'
+             - curl -u ${int_jfrog_cloud_user}:${int_jfrog_cloud_apikey} --header "Content-Type:application/json" --request PATCH  ${int_jfrog_cloud_url}/api/metadata/docker-prod-local/pet_clinic_discovery_server_docker_image/${res_DiscoveryServerDockerImagePromotedBuildInfo_buildNumber} --data '{"props":{"integrationtest":"passed"}}'
+             - curl -u ${int_jfrog_cloud_user}:${int_jfrog_cloud_apikey} --header "Content-Type:application/json" --request PATCH  ${int_jfrog_cloud_url}/api/metadata/docker-prod-local/pet_clinic_customers_service_docker_image/${res_CustomersServiceDockerImagePromotedBuildInfo_buildNumber} --data '{"props":{"integrationtest":"passed"}}'
+             - curl -u ${int_jfrog_cloud_user}:${int_jfrog_cloud_apikey} --header "Content-Type:application/json" --request PATCH  ${int_jfrog_cloud_url}/api/metadata/docker-prod-local/pet_clinic_ui_service_docker_image/${res_UIServiceDockerImagePromotedBuildInfo_buildNumber} --data '{"props":{"integrationtest":"passed"}}'
+             - curl -u ${int_jfrog_cloud_user}:${int_jfrog_cloud_apikey} --header "Content-Type:application/json" --request PATCH  ${int_jfrog_cloud_url}/api/metadata/docker-prod-local/pet_clinic_vets_service_docker_image/${res_VetsServiceDockerImagePromotedBuildInfo_buildNumber} --data '{"props":{"integrationtest":"passed"}}'
+             - curl -u ${int_jfrog_cloud_user}:${int_jfrog_cloud_apikey} --header "Content-Type:application/json" --request PATCH  ${int_jfrog_cloud_url}/api/metadata/docker-prod-local/pet_clinic_visits_service_docker_image/${res_VisitsServiceDockerImagePromotedBuildInfo_buildNumber} --data '{"props":{"integrationtest":"passed"}}'
        - name: promote_helm_chart
          type: PromoteBuild
          configuration:
            targetRepository: helm-prod-local
            integrations:
-             - name: ArtifactoryUnified
+             - name: jfrog_cloud
            inputSteps:
              - name: test_docker_app
            inputResources:

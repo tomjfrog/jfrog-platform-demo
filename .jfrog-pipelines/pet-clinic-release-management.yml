@@ -27,7 +27,7 @@ pipelines:
         type: Bash
         configuration:
           integrations:
-            - name: ArtifactoryUnified
+            - name: jfrog_cloud
             - name: Distribution
           inputResources:
              - name: PetClinicPromotedHelmBuildInfo
@@ -50,9 +50,9 @@ pipelines:
             - echo "executing"
             - cd release-bundle-generators
             - go build
-            #- ./release-bundle-generator c artifactory --interactive=false --url ${int_ArtifactoryUnified_url} --dist-url ${int_Distribution_url} --user ${int_ArtifactoryUnified_user} --apikey ${int_ArtifactoryUnified_apikey}
+            #- ./release-bundle-generator c artifactory --interactive=false --url ${int_jfrog_cloud_url} --dist-url ${int_Distribution_url} --user ${int_jfrog_cloud_user} --apikey ${int_jfrog_cloud_apikey}
             #- ./release-bundle-generator c show
-            - ./release-bundle-generator from-chart --url ${int_ArtifactoryUnified_url} --dist-url ${int_Distribution_url} --user ${int_ArtifactoryUnified_user} --apikey ${int_ArtifactoryUnified_apikey} --chart-path=helm-prod-local/pet-clinic-0.1.${res_PetClinicPromotedHelmBuildInfo_buildNumber}.tgz --docker-repo=docker --desc="pet clinic" pet_clinic_rb 1.0.${run_number}
+            - ./release-bundle-generator from-chart --url ${int_jfrog_cloud_url} --dist-url ${int_Distribution_url} --user ${int_jfrog_cloud_user} --apikey ${int_jfrog_cloud_apikey} --chart-path=helm-prod-local/pet-clinic-0.1.${res_PetClinicPromotedHelmBuildInfo_buildNumber}.tgz --docker-repo=docker --desc="pet clinic" pet_clinic_rb 1.0.${run_number}
           onComplete: #always
             - echo "complete"
       # - name: release_bundle

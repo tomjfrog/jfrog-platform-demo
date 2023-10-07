@@ -6,13 +6,13 @@ resources:
   - name: pipelinesBuildinfo
     type: BuildInfo
     configuration:
-      sourceArtifactory: ArtifactoryUnified
+      sourceArtifactory: jfrog_cloud
       buildName: go_jenkins_jfrog_pipeline
       buildNumber: 1
   - name: pipelinesPromotedBuildinfo
     type: BuildInfo
     configuration:
-      sourceArtifactory: ArtifactoryUnified
+      sourceArtifactory: jfrog_cloud
       buildName: go_jenkins_jfrog_pipeline
       buildNumber: 1
 pipelines:

@@ -9,54 +9,54 @@ resources:
   - name: ConfigServerBuildInfo
     type: BuildInfo
     configuration:
-      sourceArtifactory: ArtifactoryUnified
-      buildName: SampleApp
+      sourceArtifactory: jfrog_cloud
+      buildName: petclinic_microservices_helm
       buildNumber: 1
   - name: DiscoveryServerBuildInfo
     type: BuildInfo
     configuration:
-      sourceArtifactory: ArtifactoryUnified
-      buildName: SampleApp
+      sourceArtifactory: jfrog_cloud
+      buildName: petclinic_microservices_helm
       buildNumber: 1
   - name: PetClinicConfigServerPromotedHelmBuildInfo
     type: BuildInfo
     configuration:
-      sourceArtifactory: ArtifactoryUnified
-      buildName: SampleApp
+      sourceArtifactory: jfrog_cloud
+      buildName: petclinic_microservices_helm
       buildNumber: 1
   - name: PetClinicDiscoveryServerPromotedHelmBuildInfo
     type: BuildInfo
     configuration:
-      sourceArtifactory: ArtifactoryUnified
-      buildName: SampleApp
+      sourceArtifactory: jfrog_cloud
+      buildName: petclinic_microservices_helm
       buildNumber: 1
   - name: PetClinicCustomersServicePromotedHelmBuildInfo
     type: BuildInfo
     configuration:
-      sourceArtifactory: ArtifactoryUnified
-      buildName: SampleApp
+      sourceArtifactory: jfrog_cloud
+      buildName: petclinic_microservices_helm
       buildNumber: 1
   - name: PetClinicUIServicePromotedHelmBuildInfo
     type: BuildInfo
     configuration:
-      sourceArtifactory: ArtifactoryUnified
-      buildName: SampleApp
+      sourceArtifactory: jfrog_cloud
+      buildName: petclinic_microservices_helm
       buildNumber: 1
   - name: PetClinicVetsServicePromotedHelmBuildInfo
     type: BuildInfo
     configuration:
-      sourceArtifactory: ArtifactoryUnified
-      buildName: SampleApp
+      sourceArtifactory: jfrog_cloud
+      buildName: petclinic_microservices_helm
       buildNumber: 1
   - name: PetClinicVisitsServicePromotedHelmBuildInfo
     type: BuildInfo
     configuration:
-      sourceArtifactory: ArtifactoryUnified
-      buildName: SampleApp
+      sourceArtifactory: jfrog_cloud
+      buildName: petclinic_microservices_helm
       buildNumber: 1
   - name: PetClinicPromotedHelmBuildInfo
     type: BuildInfo
     configuration:
-      sourceArtifactory: ArtifactoryUnified
-      buildName: SampleApp
+      sourceArtifactory: jfrog_cloud
+      buildName: petclinic_microservices_helm
       buildNumber: 1
