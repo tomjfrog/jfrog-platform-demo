@@ -1,0 +1,238 @@
+resources:
+  - name: UIServiceDockerImage
+    type: Image
+    configuration:
+      registry: ArtifactoryUnified
+      sourceRepository: docker
+      imageName: docker.artifactory-unified.soleng-us.jfrog.team/pet_clinic_ui_service_docker_image
+      imageTag: '${run_number}'
+      autoPull: true
+  - name: UIServiceBuildInfo
+    type: BuildInfo
+    configuration:
+      sourceArtifactory: ArtifactoryUnified
+      buildName: SampleApp
+      buildNumber: 1
+  - name: PetClinicUIServiceHelmChart
+    type: HelmChart
+    configuration:
+      sourceArtifactory: ArtifactoryUnified
+      repository: helm-local
+      chart: pet-clinic-ui-service
+      version: '0.1.${run_number}'
+  - name: PetClinicUIServiceHelmBuildInfo
+    type: BuildInfo
+    configuration:
+      sourceArtifactory: ArtifactoryUnified
+      buildName: SampleApp
+      buildNumber: 1
+  - name: PetClinicUIServicePromotedHelmChart
+    type: HelmChart
+    configuration:
+      sourceArtifactory: ArtifactoryUnified
+      repository: helm-prod-local
+      chart: pet-clinic-ui-service
+      version: '0.${run_number}.0'
+  - name: UIServiceDockerImagePromotedBuildInfo
+    type: BuildInfo
+    configuration:
+      sourceArtifactory: ArtifactoryUnified
+      buildName: SampleApp
+      buildNumber: 1
+pipelines:
+  - name: pet_clinic_ui_service
+    configuration:
+      environmentVariables:
+        readOnly:
+           my_env_var: '1.0.$run_number'
+           ArtIP: $(echo ${int_ArtifactoryUnified_url}|awk -F '/' '{print $3}'|awk -F ':' '{print $1}')
+    steps:
+      - name: bld_ui_service
+        type: MvnBuild
+        configuration:
+          sourceLocation: Samples/pet-clinic-project/spring-petclinic-microservices/spring-petclinic-api-gateway
+          mvnCommand: clean install -ntp
+          configFileLocation: .
+          configFileName: mvn-art-config
+          inputResources:
+            - name: PetClinicProjectGitRepo
+              trigger: false
+          integrations:
+            - name: ArtifactoryUnified
+          runtime:
+            type: image
+            image:
+              auto:
+                language: java
+                versions:
+                  - "11"
+        execution:
+          onStart:
+            - javac -version
+            - mvn --version
+            #- add_pipeline_variables previous_backend_ver=${my_env_var}
+            - add_pipeline_variables JFROG_CLI_BUILD_NAME="UIServiceMavenBuild"
+            - sed -ie 's/Default-Server/ArtifactoryUnified/g' $res_PetClinicProjectGitRepo_resourcePath/Samples/pet-clinic-project/spring-petclinic-microservices/spring-petclinic-api-gateway/mvn-art-config
+            #- sed -ie "s/2.3.1/$my_env_var/g" $res_PetClinicProjectGitRepo_resourcePath/spring-petclinic-customers-service/pom.xml
+          onComplete:
+            - echo $run_var
+            - echo "Running $pipeline_name | $step_name on node ID $step_node_id"
+          onSuccess:
+            - rm -r ${steplet_run_state_dir}/jfrog
+      - name: bld_ui_service_docker_image
+        type: DockerBuild
+        configuration:
+          affinityGroup: bldGroup
+          dockerFileLocation: Samples/pet-clinic-project/spring-petclinic-microservices/spring-petclinic-api-gateway
+          dockerFileName: Dockerfile
+          dockerImageName: docker.${ArtIP}/pet_clinic_ui_service_docker_image
+          dockerImageTag: '${run_number}'
+          integrations:
+            - name: ArtifactoryUnified
+          inputResources:
+            - name: PetClinicProjectGitRepo
+              trigger: false
+          outputResources:
+            - name: UIServiceDockerImage
+          inputSteps:
+            - name: bld_ui_service
+        execution:
+          onStart:
+            - sed -i "s/docker.artifactory/docker.${ArtIP}/" $res_PetClinicProjectGitRepo_resourcePath/Samples/pet-clinic-project/spring-petclinic-microservices/spring-petclinic-api-gateway/Dockerfile
+            - sed -i "s/artifactory-unified.soleng-us.jfrog.team/${ArtIP}/" $res_PetClinicProjectGitRepo_resourcePath/Samples/pet-clinic-project/spring-petclinic-microservices/spring-petclinic-api-gateway/Dockerfile
+            #- sed -i "s/1.0.0/$previous_backend_ver/g" $res_PetClinicProjectGitRepo_resourcePath/Dockerfile
+          onComplete:
+            - echo $step_env_var2
+            - echo "Running $pipeline_name | $step_name on node ID $step_node_id"
+      - name: push_ui_service_docker_image
+        type: DockerPush
+        configuration:
+          affinityGroup: bldGroup
+          targetRepository: docker
+          forceXrayScan: false
+          autoPublishBuildInfo: true
+          integrations:
+            - name: ArtifactoryUnified
+          inputSteps:
+            - name: bld_ui_service_docker_image
+          outputResources:
+            - name: UIServiceBuildInfo
+  - name: pet_clinic_ui_service_helm_deploy
+    steps:
+      - name: helm_build
+        type: HelmPublish
+        configuration:
+          chartPath: Samples/pet-clinic-project/spring-petclinic-microservices/spring-petclinic-api-gateway/pet-clinic-ui-service
+          autoPublishBuildInfo: true
+          flags: "-u"
+          inputResources:
+            - name: PetClinicProjectGitRepo
+              trigger: false
+            - name: UIServiceBuildInfo
+              trigger: true
+            - name: PetClinicDiscoveryServerPromotedHelmBuildInfo
+              trigger: false
+          outputResources:
+            - name: PetClinicUIServiceHelmChart
+            - name: PetClinicUIServiceHelmBuildInfo
+        execution:
+          onStart:
+            - helm init --client-only --skip-refresh
+            - helm repo rm stable
+            - helm repo add stable https://charts.helm.sh/stable
+            - pushd $res_PetClinicProjectGitRepo_resourcePath/Samples/pet-clinic-project/spring-petclinic-microservices/spring-petclinic-api-gateway/pet-clinic-ui-service
+            - add_pipeline_variables triggerBuildInfoNumber="${res_UIServiceBuildInfo_buildNumber}"
+            - sed -i "s/0.1.0/0.$run_number.0/g" Chart.yaml
+            - sed -i "s/1.1/$triggerBuildInfoNumber/" values.yaml
+            - sed -i "s/0.19.0/0.${res_PetClinicDiscoveryServerPromotedHelmBuildInfo_buildNumber}.0/" requirements.yaml
+      - name: deploy_helm
+        type: HelmDeploy
+        configuration:
+          releaseName: ui-service
+          integrations:
+            - name: K8S_SA #SolEngUS
+          inputResources:
+            - name: PetClinicUIServiceHelmChart
+          flags: '--namespace default --force'
+          valueFilePaths:
+            - values.yaml
+        execution:
+          onStart:
+            - helm init --client-only --skip-refresh
+            - helm repo rm stable
+            - helm repo add stable https://charts.helm.sh/stable
+          #- helm init --service-account pet-clinic --namespace default
+          onSuccess:
+            - kubectl get pods --namespace default
+          onComplete: #always
+            #- sleep 30
+            - kubectl get pods
+            #- kubectl get pods --no-headers=true | awk '/ui-server/{print $1}'
+            - add_run_variables pod_name="$(kubectl get pods --no-headers=true | awk '/ui-service/{print $1}')"
+            #- add_run_variables pod_ip="$(kubectl describe pod $pod_name | grep "IP:" | awk '{print $2}')"
+            - add_run_variables pod_ip="$(kubectl describe service ui-service | grep "LoadBalancer Ingress" | awk '{print $3}')"
+            - echo "pod name is $pod_name and pod ip is $pod_ip"
+      - name: test_docker_app
+        type: Bash
+        configuration:
+          inputSteps:
+            - name: deploy_helm
+          integrations:
+            - name: ArtifactoryUnified
+        execution:
+          onStart:
+            - echo "testing docker application" #$latest_docker_ver
+          onExecute:
+            - echo "testing"
+            #- PAGE=$(curl -s "http://localhost:8088/index.html" | tr '[:upper:]' '[:lower:]')
+            #- if [[ $PAGE =~ "swampup" ]]; then echo "swampup found" fi
+            - if curl -Is "http://$pod_ip:8080"; then add_run_variables dockerAppStatus="pass"; else add_run_variables dockerAppStatus="fail"; fi
+            #- if curl -Is "http://$pod_ip:8080/index.html"; then add_run_variables docker_promotion_repo=docker-prod-local; else add_run_variables docker_promotion_repo=docker-archive-local; fi
+          onComplete: #always
+            - echo "testing done"
+            - curl -u ${int_ArtifactoryUnified_user}:${int_ArtifactoryUnified_apikey} --header "Content-Type:application/json" --request PATCH  ${int_ArtifactoryUnified_url}/api/metadata/docker-dev-local/pet_clinic_ui_service_docker_image/$triggerBuildInfoNumber --data '{"props":{"unittest":"passed"}}'
+      - name: scan_ui_service_docker_image
+        type: XrayScan
+        configuration:
+          failOnScan: false
+          inputSteps:
+            - name: test_docker_app
+          inputResources:
+            - name: UIServiceBuildInfo
+              trigger: false
+        execution:
+          onStart:
+            - echo "Xray scan to start"
+          onComplete: #always
+            - echo "Xray scan complete"
+      - name: promote_docker_app
+        type: PromoteBuild
+        configuration:
+          targetRepository: docker-prod-local
+          integrations:
+            - name: ArtifactoryUnified
+          inputSteps:
+            - name: scan_ui_service_docker_image
+          inputResources:
+            - name: UIServiceBuildInfo
+              trigger: false
+          outputResources:
+            - name: UIServiceDockerImagePromotedBuildInfo
+        execution:
+          onStart:
+            - echo "Promotion repo is docker-prod-local"
+          onComplete: #always
+            - echo "Promotion complete"
+            - curl -u ${int_ArtifactoryUnified_user}:${int_ArtifactoryUnified_apikey} --header "Content-Type:application/json" --request PATCH  ${int_ArtifactoryUnified_url}/api/metadata/docker-prod-local/pet_clinic_ui_service_docker_image/$triggerBuildInfoNumber --data '{"props":{"xrayscan":"passed"}}'
+      - name: promote_helm_chart
+        type: PromoteBuild
+        configuration:
+          targetRepository: helm-prod-local
+          integrations:
+            - name: ArtifactoryUnified
+          inputSteps:
+            - name: promote_docker_app
+          inputResources:
+            - name: PetClinicUIServiceHelmBuildInfo
+          outputResources:
+            - name: PetClinicUIServicePromotedHelmBuildInfo

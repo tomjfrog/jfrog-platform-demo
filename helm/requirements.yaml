@@ -1,0 +1,19 @@
+dependencies:
+  - name: pet-clinic-config-server
+    version: 0.111.0
+    repository: http://artifactory-unified.soleng-us.jfrog.team/artifactory/helm-virtual/
+  - name: pet-clinic-discovery-server
+    version: 0.112.0
+    repository: http://artifactory-unified.soleng-us.jfrog.team/artifactory/helm-virtual/
+  - name: pet-clinic-ui-service
+    version: 0.113.0
+    repository: http://artifactory-unified.soleng-us.jfrog.team/artifactory/helm-virtual/
+  - name: pet-clinic-vets-service
+    version: 0.114.0
+    repository: http://artifactory-unified.soleng-us.jfrog.team/artifactory/helm-virtual/
+  - name: pet-clinic-visits-service
+    version: 0.115.0
+    repository: http://artifactory-unified.soleng-us.jfrog.team/artifactory/helm-virtual/
+  - name: pet-clinic-customers-service
+    version: 0.116.0
+    repository: http://artifactory-unified.soleng-us.jfrog.team/artifactory/helm-virtual/

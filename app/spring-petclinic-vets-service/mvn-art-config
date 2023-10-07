@@ -1,0 +1,10 @@
+version: 1
+type: maven
+resolver:
+  snapshotRepo: vets_service-maven
+  releaseRepo: vets_service-maven
+  serverID: Default-Server
+deployer:
+  snapshotRepo: vets_service-maven-dev-local
+  releaseRepo: vets_service-maven-staging-local
+  serverID: Default-Server

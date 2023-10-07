@@ -1,0 +1,102 @@
+resources:
+  - name: PetClinicReleaseBundle
+    type: ReleaseBundle
+    configuration:
+      sourceDistribution: Distribution
+      name: pet_clinic_rb
+      version: 1.0.${run_number}
+  - name: PetClinicSignedReleaseBundle
+    type: ReleaseBundle
+    configuration:
+      sourceDistribution: Distribution
+      name: pet_clinic_rb
+      version: 1.0.${run_number}
+  - name: PetClinicDistributionRules
+    type: DistributionRule
+    configuration:
+      sourceDistribution: Distribution
+      serviceName: "Edge*"
+      siteName: "Edge1"
+      cityName: "*"
+      countryCodes:
+        - "*"
+pipelines:
+  - name: pet_clinic_release_mgmt
+    steps:
+      - name: install_run_rb_generator
+        type: Bash
+        configuration:
+          integrations:
+            - name: ArtifactoryUnified
+            - name: Distribution
+          inputResources:
+             - name: PetClinicPromotedHelmBuildInfo
+               trigger: false
+          outputResources:
+             - name: PetClinicReleaseBundle
+          runtime:
+            type: image
+            image:
+              auto:
+                language: go
+                versions:
+                  - "1.14.4"
+        execution:
+          onStart:
+            - echo "testing pet clinic application"
+            - go version
+            - git clone https://github.com/jfrog/release-bundle-generators
+          onExecute:
+            - echo "executing"
+            - cd release-bundle-generators
+            - go build
+            #- ./release-bundle-generator c artifactory --interactive=false --url ${int_ArtifactoryUnified_url} --dist-url ${int_Distribution_url} --user ${int_ArtifactoryUnified_user} --apikey ${int_ArtifactoryUnified_apikey}
+            #- ./release-bundle-generator c show
+            - ./release-bundle-generator from-chart --url ${int_ArtifactoryUnified_url} --dist-url ${int_Distribution_url} --user ${int_ArtifactoryUnified_user} --apikey ${int_ArtifactoryUnified_apikey} --chart-path=helm-prod-local/pet-clinic-0.1.${res_PetClinicPromotedHelmBuildInfo_buildNumber}.tgz --docker-repo=docker --desc="pet clinic" pet_clinic_rb 1.0.${run_number}
+          onComplete: #always
+            - echo "complete"
+      # - name: release_bundle
+      #   type: CreateReleaseBundle
+      #   configuration:
+      #     releaseBundleName: pet_clinic_rb
+      #     releaseBundleVersion: v1.0.${run_number}
+      #     dryRun: false
+      #     sign: false
+      #     description: "some random test description"
+      #     inputResources:
+      #       - name: ConfigServerBuildInfo
+      #         trigger: false
+      #       - name: DiscoveryServerBuildInfo
+      #         trigger: false
+      #       - name: CustomersServiceBuildInfo
+      #         trigger: false
+      #       - name: UIServiceBuildInfo
+      #         trigger: false
+      #       - name: VetsServiceBuildInfo
+      #         trigger: false
+      #       - name: VisitsServiceBuildInfo
+      #         trigger: false
+      #       - name: PetClinicPromotedHelmBuildInfo
+      #         trigger: false
+      #     outputResources:
+      #       - name: PetClinicReleaseBundle
+      #     releaseNotes:
+      #       syntax: markdown
+      #       content: |
+      #         ## Heading
+      #           * Bullet
+      #           * Points
+      - name: signBundle
+        type: SignReleaseBundle
+        configuration:
+          inputResources:
+            - name: PetClinicReleaseBundle
+          outputResources:
+            - name: PetClinicSignedReleaseBundle
+      - name: distributeBundle
+        type: DistributeReleaseBundle
+        configuration:
+          dryRun: false
+          inputResources:
+            - name: PetClinicSignedReleaseBundle
+            - name: PetClinicDistributionRules

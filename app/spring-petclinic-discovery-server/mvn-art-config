@@ -1,0 +1,10 @@
+version: 1
+type: maven
+resolver:
+  snapshotRepo: discovery_server-maven
+  releaseRepo: discovery_server-maven
+  serverID: Default-Server
+deployer:
+  snapshotRepo: discovery_server-maven-dev-local
+  releaseRepo: discovery_server-maven-staging-local
+  serverID: Default-Server

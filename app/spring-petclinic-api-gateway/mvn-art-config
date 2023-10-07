@@ -1,0 +1,10 @@
+version: 1
+type: maven
+resolver:
+  snapshotRepo: ui_server-maven
+  releaseRepo: ui_server-maven
+  serverID: Default-Server
+deployer:
+  snapshotRepo: ui_server-maven-dev-local
+  releaseRepo: ui_server-maven-staging-local
+  serverID: Default-Server

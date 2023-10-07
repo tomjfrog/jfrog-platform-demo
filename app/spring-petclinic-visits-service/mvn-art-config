@@ -1,0 +1,10 @@
+version: 1
+type: maven
+resolver:
+  snapshotRepo: visits_service-maven
+  releaseRepo: visits_service-maven
+  serverID: Default-Server
+deployer:
+  snapshotRepo: visits_service-maven-dev-local
+  releaseRepo: visits_service-maven-staging-local
+  serverID: Default-Server

@@ -1,0 +1,10 @@
+version: 1
+type: maven
+resolver:
+  snapshotRepo: config_server-maven
+  releaseRepo: config_server-maven
+  serverID: Default-Server
+deployer:
+  snapshotRepo: config_server-maven-dev-local
+  releaseRepo: config_server-maven-staging-local
+  serverID: Default-Server

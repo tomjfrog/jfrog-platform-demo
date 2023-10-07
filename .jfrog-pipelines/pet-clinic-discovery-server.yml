@@ -1,0 +1,239 @@
+resources:
+  - name: DiscoveryServerDockerImage
+    type: Image
+    configuration:
+      registry: ArtifactoryUnified
+      sourceRepository: docker
+      imageName: docker.artifactory-unified.soleng-us.jfrog.team/pet_clinic_discovery_server_docker_image
+      imageTag: '${run_number}'
+      autoPull: true
+  - name: PetClinicDiscoveryServerHelmChart
+    type: HelmChart
+    configuration:
+      sourceArtifactory: ArtifactoryUnified
+      repository: helm-local
+      chart: pet-clinic-discovery-server
+      version: '0.1.${run_number}'
+  - name: PetClinicDiscoveryServerHelmBuildInfo
+    type: BuildInfo
+    configuration:
+      sourceArtifactory: ArtifactoryUnified
+      buildName: SampleApp
+      buildNumber: 1
+  - name: PetClinicDiscoveryServerPromotedHelmChart
+    type: HelmChart
+    configuration:
+      sourceArtifactory: ArtifactoryUnified
+      repository: helm-prod-local
+      chart: pet-clinic-discovery-server
+      version: '0.${run_number}.0'
+  - name: DiscoveryServerDockerImagePromotedBuildInfo
+    type: BuildInfo
+    configuration:
+      sourceArtifactory: ArtifactoryUnified
+      buildName: SampleApp
+      buildNumber: 1
+pipelines:
+  - name: pet_clinic_discovery_server
+    configuration:
+      environmentVariables:
+        readOnly:
+          my_env_var: '1.0.$run_number'
+          ArtIP: $(echo ${int_ArtifactoryUnified_url}|awk -F '/' '{print $3}'|awk -F ':' '{print $1}')
+    steps:
+      - name: bld_discovery_server
+        type: MvnBuild
+        configuration:
+          sourceLocation: Samples/pet-clinic-project/spring-petclinic-microservices/spring-petclinic-discovery-server
+          mvnCommand: clean install -ntp
+          configFileLocation: .
+          configFileName: mvn-art-config
+          inputResources:
+            - name: PetClinicProjectGitRepo
+              trigger: false
+          integrations:
+            - name: ArtifactoryUnified
+          runtime:
+            type: image
+            image:
+              auto:
+                language: java
+                versions:
+                  - "11"
+        execution:
+          onStart:
+            - javac -version
+            - mvn --version
+            #- add_pipeline_variables previous_backend_ver=${my_env_var}
+            - add_pipeline_variables JROG_CLI_BUILD_NAME="DiscoveryServiceMavenBuild"
+            - sed -ie 's/Default-Server/ArtifactoryUnified/g' $res_PetClinicProjectGitRepo_resourcePath/Samples/pet-clinic-project/spring-petclinic-microservices/spring-petclinic-discovery-server/mvn-art-config
+            #- sed -ie "s/2.3.1/$my_env_var/g" $res_PetClinicProjectGitRepo_resourcePath/spring-petclinic-customers-service/pom.xml
+          onComplete:
+            - echo $run_var
+            - echo "Running $pipeline_name | $step_name on node ID $step_node_id"
+          onSuccess:
+            - rm -r ${steplet_run_state_dir}/jfrog
+      - name: bld_discovery_server_docker_image
+        type: DockerBuild
+        configuration:
+          affinityGroup: bldGroup
+          dockerFileLocation: Samples/pet-clinic-project/spring-petclinic-microservices/spring-petclinic-discovery-server
+          dockerFileName: Dockerfile
+          dockerImageName: docker.${ArtIP}/pet_clinic_discovery_server_docker_image
+          dockerImageTag: '${run_number}'
+          integrations:
+            - name: ArtifactoryUnified
+          inputResources:
+            - name: PetClinicProjectGitRepo
+              trigger: false
+          outputResources:
+            - name: DiscoveryServerDockerImage
+          inputSteps:
+            - name: bld_discovery_server
+        execution:
+          onStart:
+            - sed -i "s/docker.artifactory/docker.${ArtIP}/" $res_PetClinicProjectGitRepo_resourcePath/Samples/pet-clinic-project/spring-petclinic-microservices/spring-petclinic-discovery-server/Dockerfile
+            - sed -i "s/artifactory-unified.soleng-us.jfrog.team/${ArtIP}/" $res_PetClinicProjectGitRepo_resourcePath/Samples/pet-clinic-project/spring-petclinic-microservices/spring-petclinic-discovery-server/Dockerfile
+            #- sed -i "s/1.0.0/$previous_backend_ver/g" $res_PetClinicProjectGitRepo_resourcePath/Dockerfile
+          onComplete:
+            - echo $step_env_var2
+            - echo "Running $pipeline_name | $step_name on node ID $step_node_id"
+      - name: push_discovery_server_docker_image
+        type: DockerPush
+        configuration:
+          affinityGroup: bldGroup
+          targetRepository: docker
+          forceXrayScan: false
+          failOnScan: false
+          autoPublishBuildInfo: true
+          integrations:
+            - name: ArtifactoryUnified
+          inputSteps:
+            - name: bld_discovery_server_docker_image
+          outputResources:
+            - name: DiscoveryServerBuildInfo
+  - name: pet_clinic_discovery_server_helm_deploy
+    steps:
+      - name: helm_build
+        type: HelmPublish
+        configuration:
+          chartPath: Samples/pet-clinic-project/spring-petclinic-microservices/spring-petclinic-discovery-server/pet-clinic-discovery-server
+          autoPublishBuildInfo: true
+          flags: "-u"
+          inputResources:
+            - name: PetClinicProjectGitRepo
+              trigger: false
+            - name: DiscoveryServerBuildInfo
+              trigger: true
+            - name: PetClinicConfigServerPromotedHelmBuildInfo
+              trigger: false
+          outputResources:
+            - name: PetClinicDiscoveryServerHelmChart
+            - name: PetClinicDiscoveryServerHelmBuildInfo
+        execution:
+          onStart:
+            - helm init --client-only --skip-refresh
+            - helm repo rm stable
+            - helm repo add stable https://charts.helm.sh/stable
+            - pushd $res_PetClinicProjectGitRepo_resourcePath/Samples/pet-clinic-project/spring-petclinic-microservices/spring-petclinic-discovery-server/pet-clinic-discovery-server
+            #- add_pipeline_variables triggerBuildInfoName="${res_myBuildInfo_buildName}"0
+            - add_pipeline_variables triggerBuildInfoNumber="${res_DiscoveryServerBuildInfo_buildNumber}"
+            #- sed -i "s/docker.artifactory/docker.artifactory-unified.soleng-us.jfrog.team/" values.yaml
+            #- sed -i "s/docker-app/swampup_docker_app_demo/" values.yaml
+            - sed -i "s/0.1.0/0.$run_number.0/g" Chart.yaml
+            #- sed -i "s/latest/1.1.1/" values.yaml
+            - sed -i "s/1.1/$triggerBuildInfoNumber/" values.yaml
+            - sed -i "s/0.49.0/0.${res_PetClinicConfigServerPromotedHelmBuildInfo_buildNumber}.0/" requirements.yaml
+            - cat requirements.yaml
+      - name: deploy_helm
+        type: HelmDeploy
+        configuration:
+          releaseName: discovery-server
+          integrations:
+            - name: K8S_SA #SolEngUS
+          inputResources:
+            - name: PetClinicDiscoveryServerHelmChart
+          flags: '--namespace default --force'
+          valueFilePaths:
+            - values.yaml
+        execution:
+          onStart:
+            - helm init --client-only --skip-refresh
+            - helm repo rm stable
+            - helm repo add stable https://charts.helm.sh/stable
+          #onStart:
+          #- helm init --service-account pet-clinic --namespace default
+          onSuccess:
+            - kubectl get pods --namespace default
+          onComplete: #always
+            - kubectl get pods
+            #- kubectl get pods --no-headers=true | awk '/ui-server/{print $1}'
+            - add_run_variables pod_name="$(kubectl get pods --no-headers=true | awk '/discovery-server/{print $1}')"
+            - add_run_variables pod_ip="$(kubectl describe pod $pod_name | grep "IP:" | awk '{print $2}')"
+            - echo "pod name is $pod_name and pod ip is $pod_ip"
+      - name: test_docker_app
+        type: Bash
+        configuration:
+          inputSteps:
+            - name: deploy_helm
+          integrations:
+            - name: ArtifactoryUnified
+        execution:
+          onStart:
+            - echo "testing docker application" #$latest_docker_ver
+          onExecute:
+            - echo "testing"
+            - echo "$pod_ip"
+            #- PAGE=$(curl -s "http://localhost:8088/index.html" | tr '[:upper:]' '[:lower:]')
+            #- if [[ $PAGE =~ "swampup" ]]; then echo "swampup found" fi
+            #- if curl -Is "http://$pod_ip:8761"; then add_run_variables dockerAppStatus="pass"; else add_run_variables dockerAppStatus="fail"; fi
+            #- if curl -Is "http://$pod_ip:8080/index.html"; then add_run_variables docker_promotion_repo=docker-prod-local; else add_run_variables docker_promotion_repo=docker-archive-local; fi
+          onComplete: #always
+            - echo "testing done"
+            - echo "pet clinic discovery image status is $dockerAppStatus"
+            - curl -u ${int_ArtifactoryUnified_user}:${int_ArtifactoryUnified_apikey} --header "Content-Type:application/json" --request PATCH  ${int_ArtifactoryUnified_url}/api/metadata/docker-dev-local/pet_clinic_discovery_server_docker_image/$triggerBuildInfoNumber --data '{"props":{"unittest":"passed"}}'
+      - name: scan_discovery_docker_image
+        type: XrayScan
+        configuration:
+          failOnScan: false
+          inputSteps:
+            - name: test_docker_app
+          inputResources:
+            - name: DiscoveryServerBuildInfo
+              trigger: false
+        execution:
+          onStart:
+            - echo "Xray scan to start"
+          onComplete: #always
+            - echo "Xray scan complete"
+      - name: promote_docker_app
+        type: PromoteBuild
+        configuration:
+          targetRepository: docker-prod-local
+          integrations:
+            - name: ArtifactoryUnified
+          inputSteps:
+            - name: scan_discovery_docker_image
+          inputResources:
+            - name: DiscoveryServerBuildInfo
+              trigger: false
+          outputResources:
+            - name: DiscoveryServerDockerImagePromotedBuildInfo
+        execution:
+          onStart:
+            - echo "Promotion repo is docker-prod-local"
+          onComplete: #always
+            - echo "Promotion complete"
+            - curl -u ${int_ArtifactoryUnified_user}:${int_ArtifactoryUnified_apikey} --header "Content-Type:application/json" --request PATCH  ${int_ArtifactoryUnified_url}/api/metadata/docker-prod-local/pet_clinic_discovery_server_docker_image/$triggerBuildInfoNumber --data '{"props":{"xrayscan":"passed"}}'
+      - name: promote_helm_chart
+        type: PromoteBuild
+        configuration:
+          targetRepository: helm-prod-local
+          integrations:
+            - name: ArtifactoryUnified
+          inputSteps:
+            - name: promote_docker_app
+          inputResources:
+            - name: PetClinicDiscoveryServerHelmBuildInfo
+          outputResources:
+            - name: PetClinicDiscoveryServerPromotedHelmBuildInfo
