@@ -45,7 +45,7 @@ pipelines:
         type: MvnBuild
         configuration:
           sourceLocation: app/spring-petclinic-config-server
-          mvnCommand: clean install -X
+          mvnCommand: clean install
           configFileLocation: .
           configFileName: mvn-art-config
           inputResources:
