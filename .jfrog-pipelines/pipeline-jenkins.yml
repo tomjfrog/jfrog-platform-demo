@@ -1,0 +1,95 @@
+resources:
+  - name: jenkinsWebhook
+    type: IncomingWebhook
+    configuration:
+      webhookName : jenkins_unified
+  - name: pipelinesBuildinfo
+    type: BuildInfo
+    configuration:
+      sourceArtifactory: jfrog_cloud
+      buildName: go_jenkins_jfrog_pipeline
+      buildNumber: 1
+  - name: pipelinesPromotedBuildinfo
+    type: BuildInfo
+    configuration:
+      sourceArtifactory: jfrog_cloud
+      buildName: go_jenkins_jfrog_pipeline
+      buildNumber: 1
+pipelines:
+  - name: go_jenkins_jfrog_pipeline
+    steps:
+      - name: start_from_jenkins
+        type: Bash
+        configuration:
+          inputResources:
+            - name: jenkinsWebhook
+          outputResources :
+            - name : pipelinesBuildinfo
+        execution:
+          onStart:
+            - sudo apt-get install -y jq
+          onExecute:
+            - echo 'Jenkins job triggered Pipelines'
+            - echo $res_jenkinsWebhook_payload
+            - echo $res_jenkinsWebhook_payload | jq .buildNumber
+            - add_pipeline_variables triggerBuildInfoNumber=$(echo $res_jenkinsWebhook_payload | jq -r .buildNumber)
+            - add_pipeline_variables triggerBuildInfoName=$(echo $res_jenkinsWebhook_payload | jq -r .buildName)
+            - echo $triggerBuildInfoName
+            - write_output pipelinesBuildinfo buildName=$triggerBuildInfoName buildNumber=$triggerBuildInfoNumber
+            #- write_output res_pipelinesBuildinfo_buildNumber=$triggerBuildInfoNumber
+      - name: deploy_staging
+        type: HelmDeploy
+        configuration:
+          inputSteps:
+            - name: start_from_jenkins
+          inputResources:
+            - name: PetClinicProjectGitRepo
+              trigger: false
+          integrations:
+            - name: tomj_gke_cluster
+          releaseName: goci-example
+          chartPath: Samples/jfrog-pipelines-jenkins-example/chart/goci-example/
+          flags: --debug
+        execution:
+          onStart:
+            #- gcloud container clusters get-credentials jefff-goci-example --zone us-central1-c --project jfrog-parnership-team
+            #- sed -i "s/0.1.0/0.$run_number.0/g" Chart.yaml
+            - echo $triggerBuildInfoNumber
+            - pushd $res_PetClinicProjectGitRepo_resourcePath/Samples/jfrog-pipelines-jenkins-example/chart/goci-example/
+            - sed -i "s/1.1/$triggerBuildInfoNumber/" values.yaml
+            - helm delete goci-example --purge || true
+      - name: staging_test
+        type: Bash
+        configuration:
+          inputSteps:
+            - name: deploy_staging
+          inputResources:
+            - name: PetClinicProjectGitRepo
+              trigger: false
+          runtime:
+            type: image
+            image:
+              auto:
+                language: go
+                versions:
+                  - "1.13"
+          environmentVariables:
+            STAGING_URL: "http://goci-example.35.238.177.209.xip.io"
+        execution:
+          onExecute:
+            # - cd ../dependencyState/resources/PetClinicProjectGitRepo
+            # - go mod download
+            # - go test ./test -run Staging
+            - echo "Testing Complete"
+      - name: promote_release
+        type: PromoteBuild
+        configuration:
+          inputSteps:
+            - name: staging_test
+          targetRepository: docker-prod-local
+          status: Released
+          comment: Passed staging tests.
+          inputResources:
+            - name: pipelinesBuildinfo
+          outputResources:
+            - name: pipelinesPromotedBuildinfo

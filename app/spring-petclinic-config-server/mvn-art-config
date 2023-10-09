@@ -5,6 +5,6 @@ resolver:
   releaseRepo: config_server-maven
   serverID: Default-Server
 deployer:
-  snapshotRepo: config_server-maven-dev-local
+  snapshotRepo: config_server-maven-staging-local
   releaseRepo: config_server-maven-staging-local
   serverID: Default-Server
