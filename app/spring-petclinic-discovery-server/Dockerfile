@@ -2,7 +2,7 @@
 ARG REGISTRY=tomjfrog.jfrog.io/petclinic-microservices-virtual
 #FROM openjdk:11-jdk
 #FROM $REGISTRY/openjdk:8-jdk-alpine
-FROM $REGISTRY/petclinic-microservices/virtual/adoptopenjdk:11-jdk
+FROM $REGISTRY/petclinic-microservices-virtual/adoptopenjdk:11-jdk
 
 
 WORKDIR /app
