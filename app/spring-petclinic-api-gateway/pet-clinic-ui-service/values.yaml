@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: docker.artifactory-unified.soleng-us.jfrog.team/pet_clinic_ui_service_docker_image
+  repository: tomjfrog.jfrog.io/petclinic-microservices-virtual/pet_clinic_ui_service_docker_image
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "1.1"

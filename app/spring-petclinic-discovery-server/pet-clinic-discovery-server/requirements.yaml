@@ -1,4 +1,4 @@
 dependencies:
   - name: pet-clinic-config-server
     version: 0.49.0
-    repository: http://artifactory-unified.soleng-us.jfrog.team/artifactory/helm-virtual/
+    repository: https://tomjfrog.jfrog.io/artifactory/helm-virtual/

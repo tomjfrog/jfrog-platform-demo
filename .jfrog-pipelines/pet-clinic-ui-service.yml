@@ -4,7 +4,7 @@ resources:
     configuration:
       registry: jfrog_cloud
       sourceRepository: docker
-      imageName: docker.artifactory-unified.soleng-us.jfrog.team/pet_clinic_ui_service_docker_image
+      imageName: tomjfrog.jfrog.io/petclinic-microservices-virtual/pet_clinic_ui_service_docker_image
       imageTag: '${run_number}'
       autoPull: true
   - name: UIServiceBuildInfo
@@ -85,7 +85,7 @@ pipelines:
           affinityGroup: bldGroup
           dockerFileLocation: app/spring-petclinic-api-gateway
           dockerFileName: Dockerfile
-          dockerImageName: docker.${ArtIP}/pet_clinic_ui_service_docker_image
+          dockerImageName: tomjfrog.jfrog.io/petclinic-microservices-virtual/pet_clinic_ui_service_docker_image
           dockerImageTag: '${run_number}'
           integrations:
             - name: jfrog_cloud
@@ -98,7 +98,7 @@ pipelines:
             - name: bld_ui_service
         execution:
           onStart:
-            - sed -i "s/docker.artifactory/docker.${ArtIP}/" $res_PetClinicProjectGitRepo_resourcePath/app/spring-petclinic-api-gateway/Dockerfile
+            - sed -i "s#docker.artifactory#tomjfrog.jfrog.io/petclinic-microservices-virtual/" $res_PetClinicProjectGitRepo_resourcePath/app/spring-petclinic-api-gateway/Dockerfile
             - sed -i "s/artifactory-unified.soleng-us.jfrog.team/${ArtIP}/" $res_PetClinicProjectGitRepo_resourcePath/app/spring-petclinic-api-gateway/Dockerfile
             #- sed -i "s/1.0.0/$previous_backend_ver/g" $res_PetClinicProjectGitRepo_resourcePath/Dockerfile
           onComplete:

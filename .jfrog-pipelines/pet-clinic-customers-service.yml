@@ -4,7 +4,7 @@ resources:
     configuration:
       registry: jfrog_cloud
       sourceRepository: docker
-      imageName: docker.artifactory-unified.soleng-us.jfrog.team/pet_clinic_customers_service_docker_image
+      imageName: tomjfrog.jfrog.io/petclinic-microservices-virtual/pet_clinic_customers_service_docker_image
       imageTag: '${run_number}'
       autoPull: true
   - name: CustomersServiceBuildInfo
@@ -84,7 +84,7 @@ pipelines:
           affinityGroup: bldGroup
           dockerFileLocation: app/spring-petclinic-customers-service
           dockerFileName: Dockerfile
-          dockerImageName: docker.${ArtIP}/pet_clinic_customers_service_docker_image
+          dockerImageName: tomjfrog.jfrog.io/petclinic-microservices-virtual/pet_clinic_customers_service_docker_image
           dockerImageTag: '${run_number}'
           integrations:
             - name: jfrog_cloud

@@ -1,20 +1,20 @@
 #Download image from artifactory
-ARG REGISTRY=docker.artifactory
-#FROM openjdk:11-jdk
-#FROM $REGISTRY/openjdk:8-jdk-alpine
-FROM $REGISTRY/openjdk:11-jdk
-
+# This `REGISTRY` ARG is used to download the base Docker image from Artifactory.  It should point to a registry and repo that can resolve the base image.
+ARG REGISTRY=tomjfrog.jfrog.io/petclinic-microservices-virtual
+# This is the Repository name and image name from which the base image is pulled.
+FROM $REGISTRY/petclinic-microservices-virtual/adoptopenjdk:11-jdk
 
 WORKDIR /app
 
 #Define ARG Again -ARG variables declared before the first FROM need to be declered again
-ARG REGISTRY=http://artifactory-unified.soleng-us.jfrog.team/artifactory
-MAINTAINER Shani Levy
+# This time, the `REGISTRY` ARG is used to download the application artifacts from Artifactory.  It should point to a repository and repo that can resolve the application artifacts.
+ARG REPOSITORY=https://tomjfrog.jfrog.io/artifactory
+MAINTAINER Tom Johander
 
 EXPOSE 8080
 
 # Download artifacts from Artifactory
-RUN curl $REGISTRY/ui_server-maven/org/springframework/samples/petclinic/api/spring-petclinic-api-gateway/2.3.1/spring-petclinic-api-gateway-2.3.1.jar --output ui_server1.jar
+RUN curl $REPOSITORY/ui_server-maven/org/springframework/samples/petclinic/api/spring-petclinic-api-gateway/2.3.1/spring-petclinic-api-gateway-2.3.1.jar --output ui_server1.jar
 
 
 # Set JAVA OPTS + Static file location

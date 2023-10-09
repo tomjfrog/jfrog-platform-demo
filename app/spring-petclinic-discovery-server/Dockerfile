@@ -1,19 +1,19 @@
 #Download image from artifactory
-ARG REGISTRY=docker.artifactory
+ARG REGISTRY=tomjfrog.jfrog.io/petclinic-microservices-virtual
 #FROM openjdk:11-jdk
 #FROM $REGISTRY/openjdk:8-jdk-alpine
-FROM $REGISTRY/openjdk:11-jdk
+FROM $REGISTRY/petclinic-microservices/virtual/adoptopenjdk:11-jdk
 
 
 WORKDIR /app
 
 #Define ARG Again -ARG variables declared before the first FROM need to be declered again
-ARG REGISTRY=http://artifactory-unified.soleng-us.jfrog.team/artifactory
-MAINTAINER Shani Levy
+ARG REPOSITORY=https://tomjfrog.jfrog.io/artifactory
+MAINTAINER Tom Johander
 EXPOSE 8761
 
 # Download artifacts from Artifactory
-RUN curl $REGISTRY/discovery_server-maven/org/springframework/samples/petclinic/discovery/spring-petclinic-discovery-server/2.3.1/spring-petclinic-discovery-server-2.3.1.jar --output discovery_server1.jar
+RUN curl $REPOSITORY/discovery_server-maven/org/springframework/samples/petclinic/discovery/spring-petclinic-discovery-server/2.3.1/spring-petclinic-discovery-server-2.3.1.jar --output discovery_server1.jar
 
 
 # Set JAVA OPTS + Static file location

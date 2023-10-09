@@ -4,7 +4,7 @@ resources:
     configuration:
       registry: jfrog_cloud
       sourceRepository: docker
-      imageName: docker.artifactory-unified.soleng-us.jfrog.team/pet_clinic_config_server_docker_image
+      imageName: tomjfrog.jfrog.io/petclinic-microservices-virtual/pet_clinic_config_server_docker_image
       imageTag: '${run_number}'
       autoPull: true
   - name: PetClinicConfigServerHelmChart
@@ -78,7 +78,7 @@ pipelines:
           affinityGroup: bldGroup
           dockerFileLocation: app/spring-petclinic-config-server
           dockerFileName: Dockerfile
-          dockerImageName: docker.${ArtIP}/pet_clinic_config_server_docker_image
+          dockerImageName: tomjfrog.jfrog.io/petclinic-microservices-virtual/pet_clinic_config_server_docker_image
           dockerImageTag: '${run_number}'
           integrations:
             - name: jfrog_cloud
@@ -92,7 +92,8 @@ pipelines:
         execution:
           onStart:
             - sed -i "s/docker.artifactory/docker.${ArtIP}/" $res_PetClinicProjectGitRepo_resourcePath/app/spring-petclinic-config-server/Dockerfile
-            - sed -i "s/artifactory-unified.soleng-us.jfrog.team/${ArtIP}/" $res_PetClinicProjectGitRepo_resourcePath/app/spring-petclinic-config-server/Dockerfile
+            # This can be removed due to the SaaS hostname being "permanent" and not changing.
+            #- sed -i "s/artifactory-unified.soleng-us.jfrog.team/${ArtIP}/" $res_PetClinicProjectGitRepo_resourcePath/app/spring-petclinic-config-server/Dockerfile
             #- sed -i "s/1.0.0/$previous_backend_ver/g" $res_PetClinicProjectGitRepo_resourcePath/Dockerfile
           onComplete:
             - echo $step_env_var2

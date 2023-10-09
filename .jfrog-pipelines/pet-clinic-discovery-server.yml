@@ -4,7 +4,7 @@ resources:
     configuration:
       registry: jfrog_cloud
       sourceRepository: docker
-      imageName: docker.artifactory-unified.soleng-us.jfrog.team/pet_clinic_discovery_server_docker_image
+      imageName: tomjfrog.jfrog.io/petclinic-microservices-virtual/pet_clinic_discovery_server_docker_image
       imageTag: '${run_number}'
       autoPull: true
   - name: PetClinicDiscoveryServerHelmChart
@@ -79,7 +79,7 @@ pipelines:
           affinityGroup: bldGroup
           dockerFileLocation: app/spring-petclinic-discovery-server
           dockerFileName: Dockerfile
-          dockerImageName: docker.${ArtIP}/pet_clinic_discovery_server_docker_image
+          dockerImageName: tomjfrog.jfrog.io/petclinic-microservices-virtual/pet_clinic_discovery_server_docker_image
           dockerImageTag: '${run_number}'
           integrations:
             - name: jfrog_cloud
