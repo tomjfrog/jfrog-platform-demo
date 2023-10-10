@@ -1,6 +1,6 @@
 #Download image from artifactory
 # This `REGISTRY` ARG is used to download the base Docker image from Artifactory.  It should point to a registry and repo that can resolve the base image.
-ARG REGISTRY=tomjfrog.jfrog.io/petclinic-microservices-virtual
+ARG REGISTRY=tomjfrog.jfrog.io
 # This is the Repository name and image name from which the base image is pulled.
 FROM $REGISTRY/petclinic-microservices-virtual/adoptopenjdk:11-jdk
 

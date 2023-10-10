@@ -1,5 +1,5 @@
 #Download image from artifactory
-ARG REGISTRY=tomjfrog.jfrog.io/petclinic-microservices-virtual
+ARG REGISTRY=tomjfrog.jfrog.io
 #FROM openjdk:11-jdk
 #FROM $REGISTRY/openjdk:8-jdk-alpine
 FROM $REGISTRY/petclinic-microservices-virtual/adoptopenjdk:11-jdk
