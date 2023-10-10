@@ -102,7 +102,7 @@ pipelines:
         type: DockerPush
         configuration:
           affinityGroup: bldGroup
-          targetRepository: docker
+          targetRepository: petclinic-microservices-virtual
           forceXrayScan: false
           failOnScan: false
           autoPublishBuildInfo: true
