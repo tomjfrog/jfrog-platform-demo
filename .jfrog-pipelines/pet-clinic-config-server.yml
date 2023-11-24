@@ -42,7 +42,7 @@ pipelines:
            ArtIP: $(echo ${int_jfrog_cloud_url}|awk -F '/' '{print $3}'|awk -F ':' '{print $1}')
            USE_GKE_GCLOUD_AUTH_PLUGIN: 'true'
     steps:
-      - name: install_vm_pre-reqs
+      - name: install_vm_pre_reqs
         type: Bash
         configuration:
           affinityGroup: bldGroup
