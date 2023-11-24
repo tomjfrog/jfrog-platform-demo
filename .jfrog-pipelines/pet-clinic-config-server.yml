@@ -65,7 +65,7 @@ pipelines:
           onFailure:
             - echo 'Unsuccessfully executed pre-build tooling installation.'
           onComplete:
-            - echo 'Completed install_vm_pre-reqs step.' 
+            - echo 'Completed install_vm_pre-reqs step.'
       - name: bld_config_server
         type: MvnBuild
         configuration:
@@ -85,6 +85,8 @@ pipelines:
                 language: java
                 versions:
                   - "11"
+          inputSteps:
+            - name: install_vm_pre_reqs 
         execution:
           onStart:
             - javac -version
