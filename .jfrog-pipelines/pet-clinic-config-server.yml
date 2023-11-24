@@ -44,8 +44,6 @@ pipelines:
     steps:
       - name: install_vm_pre_reqs
         type: Bash
-        configuration:
-          affinityGroup: bldGroup
         execution:
           onStart: 
             - echo "Provisioning VM Pre-Reqs..."
