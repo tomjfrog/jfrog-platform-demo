@@ -40,7 +40,28 @@ pipelines:
         readOnly:
            my_env_var: '1.0.$run_number'
            ArtIP: $(echo ${int_jfrog_cloud_url}|awk -F '/' '{print $3}'|awk -F ':' '{print $1}')
+           USE_GKE_GCLOUD_AUTH_PLUGIN: true
     steps:
+      - name: install_vm_pre-reqs
+        type: Bash
+        configuration:
+          affinityGroup: bldGroup
+        execution:
+          onStart: echo "Provisioning VM Pre-Reqs..."
+          onExecute:
+            - echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+            - curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+            - sudo apt-get update && sudo apt-get install google-cloud-sdk
+            - gcloud components list
+            - echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+            - sudo apt update
+            - sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
+            - gcloud components list
+            - sudo apt-get update && sudo apt-get --only-upgrade install google-cloud-sdk-app-engine-python-extras google-cloud-sdk-datalab google-cloud-sdk-config-connector google-cloud-sdk-harbourbridge google-cloud-sdk-app-engine-java google-cloud-sdk google-cloud-sdk-spanner-emulator google-cloud-sdk-package-go-module google-cloud-sdk-skaffold kubectl google-cloud-sdk-terraform-tools google-cloud-sdk-kubectl-oidc google-cloud-sdk-cbt google-cloud-sdk-log-streaming google-cloud-sdk-local-extract google-cloud-sdk-pubsub-emulator google-cloud-sdk-app-engine-grpc google-cloud-sdk-app-engine-python google-cloud-sdk-app-engine-go google-cloud-sdk-anthos-auth google-cloud-sdk-nomos google-cloud-sdk-cloud-run-proxy google-cloud-sdk-firestore-emulator google-cloud-sdk-gke-gcloud-auth-plugin google-cloud-sdk-cloud-build-local google-cloud-sdk-minikube google-cloud-sdk-kpt google-cloud-sdk-bigtable-emulator google-cloud-sdk-datastore-emulator
+            - gcloud components list
+          onSuccess: echo 'Successfully executed pre-build tooling installation.'
+          onFailure: echo 'Unsuccessfully executed pre-build tooling installation.'
+          onComplete: echo 'Completed install_vm_pre-reqs step.' 
       - name: bld_config_server
         type: MvnBuild
         configuration:
@@ -132,13 +153,6 @@ pipelines:
             - helm init --client-only --skip-refresh
             - helm repo rm stable
             - helm repo add stable https://charts.helm.sh/stable
-            # This is weird, but let's try it.  Apparently I can't connect to a GKE cluster without this.
-            - sudo apt-get update
-            - sudo apt-get install apt-transport-https ca-certificates gnupg curl sudo
-            - echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-            - curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-            - sudo apt-get update && sudo apt-get install google-cloud-cli -y
-            - sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin -y
             - pushd $res_PetClinicProjectGitRepo_resourcePath/app/spring-petclinic-config-server/pet-clinic-config-server
             #- add_pipeline_variables triggerBuildInfoName="${res_myBuildInfo_buildName}"
             - add_pipeline_variables triggerBuildInfoNumber="${res_ConfigServerBuildInfo_buildNumber}"
