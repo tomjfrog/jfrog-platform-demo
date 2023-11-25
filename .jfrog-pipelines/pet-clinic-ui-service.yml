@@ -124,6 +124,7 @@ pipelines:
         configuration:
           chartPath: app/spring-petclinic-api-gateway/pet-clinic-ui-service
           autoPublishBuildInfo: true
+          helmVersion: 3
           flags: "-u"
           inputResources:
             - name: PetClinicProjectGitRepo
@@ -149,6 +150,7 @@ pipelines:
         type: HelmDeploy
         configuration:
           releaseName: ui-service
+          helmVersion: 3
           integrations:
             - name: tomj_gke_cluster #SolEngUS
           inputResources:

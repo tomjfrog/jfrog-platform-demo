@@ -123,6 +123,7 @@ pipelines:
         configuration:
           chartPath: app/spring-petclinic-visits-service/pet-clinic-visits-service
           autoPublishBuildInfo: true
+          helmVersion: 3
           flags: "-u"
           inputResources:
             - name: PetClinicProjectGitRepo
@@ -147,6 +148,7 @@ pipelines:
         type: HelmDeploy
         configuration:
           releaseName: visits-service
+          helmVersion: 3
           integrations:
             - name: tomj_gke_cluster #SolEngUS
           inputResources:

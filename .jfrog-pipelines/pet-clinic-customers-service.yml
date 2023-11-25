@@ -147,6 +147,7 @@ pipelines:
         type: HelmDeploy
         configuration:
           releaseName: customers-service
+          helmVersion: 3
           integrations:
             - name: tomj_gke_cluster #SolEngUS
           inputResources:

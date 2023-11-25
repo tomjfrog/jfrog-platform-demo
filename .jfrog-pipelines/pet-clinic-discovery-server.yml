@@ -120,6 +120,7 @@ pipelines:
           chartPath: app/spring-petclinic-discovery-server/pet-clinic-discovery-server
           autoPublishBuildInfo: true
           flags: "-u"
+          helmVersion: 3
           inputResources:
             - name: PetClinicProjectGitRepo
               trigger: false
@@ -149,6 +150,7 @@ pipelines:
         type: HelmDeploy
         configuration:
           releaseName: discovery-server
+          helmVersion: 3
           integrations:
             - name: tomj_gke_cluster #SolEngUS
             - name: gcp_service_account_for_gke_cluster # Encoded GCP Service Account Key
