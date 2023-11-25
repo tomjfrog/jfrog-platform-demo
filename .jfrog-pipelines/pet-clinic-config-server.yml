@@ -120,6 +120,7 @@ pipelines:
         configuration:
           chartPath: app/spring-petclinic-config-server/pet-clinic-config-server
           autoPublishBuildInfo: true
+          helmVersion: 3
           inputResources:
             - name: PetClinicProjectGitRepo
               trigger: false
