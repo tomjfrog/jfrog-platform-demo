@@ -170,6 +170,7 @@ pipelines:
             - gcloud container clusters get-credentials tomj-cluster-003 --zone us-east1-c --project soleng-dev
           #- helm init --service-account pet-clinic --namespace default
           onSuccess:
+            - kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=config-server -n default --timeout=600s
             - kubectl get pods --namespace default
           onComplete: #always
             #- sleep 30
