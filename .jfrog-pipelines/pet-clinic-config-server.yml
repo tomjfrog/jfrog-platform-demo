@@ -145,6 +145,7 @@ pipelines:
         type: HelmDeploy
         configuration:
           releaseName: config-server
+          helmVersion: 3
           integrations:
             - name: tomj_gke_cluster #SolEngUS
             - name: gcp_service_account_for_gke_cluster # Encoded GCP Service Account Key
