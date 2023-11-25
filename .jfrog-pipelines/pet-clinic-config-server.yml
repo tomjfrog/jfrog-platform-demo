@@ -61,8 +61,6 @@ pipelines:
                 language: java
                 versions:
                   - "11"
-          inputSteps:
-            - name: install_vm_pre_reqs 
         execution:
           onStart:
             - javac -version
