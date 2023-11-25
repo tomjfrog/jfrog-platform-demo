@@ -168,13 +168,10 @@ pipelines:
             - printenv int_gcp_service_account_for_gke_cluster_GCLOUD_SERVICE_ACCOUNT_KEY | base64 --decode > ${HOME}/gcloud-service-key.json
             - gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
             - gcloud container clusters get-credentials tomj-cluster-003 --zone us-east1-c --project soleng-dev
-          #- helm init --service-account pet-clinic --namespace default
           onSuccess:
             - kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=config-server -n default --timeout=600s
             - kubectl get pods --namespace default
           onComplete: #always
-            #- sleep 30
-            - kubectl get pods
             #- kubectl get pods --no-headers=true | awk '/ui-server/{print $1}'
             - add_run_variables pod_name="$(kubectl get pods --no-headers=true | awk '/config-server/{print $1}')"
             - add_run_variables pod_ip="$(kubectl describe pod $pod_name | grep "IP:" | awk '{print $2}')"
@@ -195,7 +192,7 @@ pipelines:
             - echo "$pod_ip"
             #- PAGE=$(curl -s "http://localhost:8088/index.html" | tr '[:upper:]' '[:lower:]')
             #- if [[ $PAGE =~ "swampup" ]]; then echo "swampup found" fi
-            #- if curl -Is "http://$pod_ip:8888/"; then add_run_variables docker_promotion_repo=docker-prod-local; else add_run_variables docker_promotion_repo=docker-archive-local; fi
+            #- if curl -Is "http://$pod_ip:8888/"; then add_run_variables docker_promotion_repo=petclinic-microservices-docker-prod-local; else add_run_variables docker_promotion_repo=docker-archive-local; fi
           onComplete: #always
             - echo "testing done"
             - echo "pet clinic config server image status is $dockerAppStatus"
@@ -216,7 +213,7 @@ pipelines:
       - name: promote_docker_app
         type: PromoteBuild
         configuration:
-          targetRepository: docker-prod-local
+          targetRepository: petclinic-microservices-petclinic-microservices-docker-prod-local
           integrations:
             - name: jfrog_cloud
           inputSteps:
@@ -227,10 +224,10 @@ pipelines:
             - name: ConfigServerDockerImagePromotedBuildInfo
         execution:
           onStart:
-            - echo "Promotion repo is docker-prod-local"
+            - echo "Promotion repo is petclinic-microservices-docker-prod-local"
           onComplete: #always
             - echo "Promotion complete"
-            - curl -u ${int_jfrog_cloud_user}:${int_jfrog_cloud_apikey} --header "Content-Type:application/json" --request PATCH  ${int_jfrog_cloud_url}/api/metadata/docker-prod-local/pet_clinic_config_server_docker_image/$triggerBuildInfoNumber --data '{"props":{"xrayscan":"passed"}}'
+            - curl -u ${int_jfrog_cloud_user}:${int_jfrog_cloud_apikey} --header "Content-Type:application/json" --request PATCH  ${int_jfrog_cloud_url}/api/metadata/petclinic-microservices-docker-prod-local/pet_clinic_config_server_docker_image/$triggerBuildInfoNumber --data '{"props":{"xrayscan":"passed"}}'
       - name: promote_helm_chart
         type: PromoteBuild
         configuration:

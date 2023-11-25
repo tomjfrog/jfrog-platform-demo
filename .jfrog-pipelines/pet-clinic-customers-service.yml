@@ -186,7 +186,7 @@ pipelines:
             #- PAGE=$(curl -s "http://localhost:8088/index.html" | tr '[:upper:]' '[:lower:]')
             #- if [[ $PAGE =~ "swampup" ]]; then echo "swampup found" fi
             #- if curl -Is "http://$pod_ip:8081"; then add_run_variables dockerAppStatus="pass"; else add_run_variables dockerAppStatus="fail"; fi
-            #- if curl -Is "http://$pod_ip:8080/index.html"; then add_run_variables docker_promotion_repo=docker-prod-local; else add_run_variables docker_promotion_repo=docker-archive-local; fi
+            #- if curl -Is "http://$pod_ip:8080/index.html"; then add_run_variables docker_promotion_repo=petclinic-microservices-docker-prod-local; else add_run_variables docker_promotion_repo=docker-archive-local; fi
           onComplete: #always
             - echo "testing done"
             - echo "pet clinic discovery image status is $dockerAppStatus"
@@ -208,7 +208,7 @@ pipelines:
       - name: promote_docker_app
         type: PromoteBuild
         configuration:
-          targetRepository: docker-prod-local
+          targetRepository: petclinic-microservices-docker-prod-local
           integrations:
             - name: jfrog_cloud
           inputSteps:
@@ -220,10 +220,10 @@ pipelines:
             - name: CustomersServiceDockerImagePromotedBuildInfo
         execution:
           onStart:
-            - echo "Promotion repo is docker-prod-local"
+            - echo "Promotion repo is petclinic-microservices-docker-prod-local"
           onComplete: #always
             - echo "Promotion complete"
-            - curl -u ${int_jfrog_cloud_user}:${int_jfrog_cloud_apikey} --header "Content-Type:application/json" --request PATCH  ${int_jfrog_cloud_url}/api/metadata/docker-prod-local/pet_clinic_customers_service_docker_image/$triggerBuildInfoNumber --data '{"props":{"xrayscan":"passed"}}'
+            - curl -u ${int_jfrog_cloud_user}:${int_jfrog_cloud_apikey} --header "Content-Type:application/json" --request PATCH  ${int_jfrog_cloud_url}/api/metadata/petclinic-microservices-docker-prod-local/pet_clinic_customers_service_docker_image/$triggerBuildInfoNumber --data '{"props":{"xrayscan":"passed"}}'
       - name: promote_helm_chart
         type: PromoteBuild
         configuration:
