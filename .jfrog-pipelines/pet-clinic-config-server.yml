@@ -213,7 +213,7 @@ pipelines:
       - name: promote_docker_app
         type: PromoteBuild
         configuration:
-          targetRepository: petclinic-microservices-petclinic-microservices-docker-prod-local
+          targetRepository: petclinic-microservices-docker-prod-local
           integrations:
             - name: jfrog_cloud
           inputSteps:
