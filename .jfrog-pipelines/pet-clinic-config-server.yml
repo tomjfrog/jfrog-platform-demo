@@ -172,7 +172,6 @@ pipelines:
             - kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=config-server -n default --timeout=600s
             - kubectl get pods --namespace default
           onComplete: #always
-            #- kubectl get pods --no-headers=true | awk '/ui-server/{print $1}'
             - add_run_variables pod_name="$(kubectl get pods --no-headers=true | awk '/config-server/{print $1}')"
             - add_run_variables pod_ip="$(kubectl describe pod $pod_name | grep "IP:" | awk '{print $2}')"
             - echo "pod name is $pod_name and pod ip is $pod_ip"
