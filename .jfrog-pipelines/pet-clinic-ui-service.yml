@@ -98,7 +98,7 @@ pipelines:
             - name: bld_ui_service
         execution:
           onStart:
-            - sed -i "s#docker.artifactory#tomjfrog.jfrog.io/petclinic-microservices-virtual/" $res_PetClinicProjectGitRepo_resourcePath/app/spring-petclinic-api-gateway/Dockerfile
+            - sed -i "s#docker.artifactory#tomjfrog.jfrog.io/petclinic-microservices-virtual/#" $res_PetClinicProjectGitRepo_resourcePath/app/spring-petclinic-api-gateway/Dockerfile
             - sed -i "s/artifactory-unified.soleng-us.jfrog.team/${ArtIP}/" $res_PetClinicProjectGitRepo_resourcePath/app/spring-petclinic-api-gateway/Dockerfile
             #- sed -i "s/1.0.0/$previous_backend_ver/g" $res_PetClinicProjectGitRepo_resourcePath/Dockerfile
           onComplete:
