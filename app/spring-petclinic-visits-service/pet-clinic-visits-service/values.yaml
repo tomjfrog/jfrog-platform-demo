@@ -11,7 +11,7 @@ image:
   tag: "1.1"
 
 imagePullSecrets:
-  -name: petclinicsecret
+  - name: petclinicsecret
 nameOverride: ""
 fullnameOverride: ""
 
