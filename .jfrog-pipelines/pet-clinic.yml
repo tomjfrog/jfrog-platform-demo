@@ -25,7 +25,7 @@
        - name: helm_build
          type: HelmPublish
          configuration:
-           chartPath: pet-clinic-chart/
+           chartPath: pet-clinic/
            autoPublishBuildInfo: true
            flags: "-u"
            inputResources:
