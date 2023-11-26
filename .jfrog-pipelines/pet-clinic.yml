@@ -51,7 +51,7 @@
              - helm init --client-only --skip-refresh
              - helm repo rm stable
              - helm repo add stable https://charts.helm.sh/stable
-             - pushd $res_PetClinicProjectGitRepo_resourcePath/helm
+             - pushd $res_PetClinicProjectGitRepo_resourcePath/pet-clinic-chart
              #- add_pipeline_variables triggerBuildInfoName="${res_myBuildInfo_buildName}"
              #- add_pipeline_variables triggerBuildInfoNumber="${res_myBuildInfo_buildNumber}"
              #- sed -i "s/docker.artifactory/docker.artifactory-unified.soleng-us.jfrog.team/" values.yaml
