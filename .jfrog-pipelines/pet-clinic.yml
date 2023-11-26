@@ -25,7 +25,7 @@
        - name: helm_build
          type: HelmPublish
          configuration:
-           chartPath: helm/
+           chartPath: pet-clinic-chart/
            autoPublishBuildInfo: true
            flags: "-u"
            inputResources:
@@ -72,6 +72,7 @@
            releaseName: pet-clinic
            integrations:
              - name: tomj_gke_cluster #SolEng-Dev GCP
+             - name: gcp_service_account_for_gke_cluster # GCP Service Account JSON Key
            inputResources:
              - name: PetClinicHelmChart
            flags: '--namespace=default --force'
