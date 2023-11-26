@@ -151,6 +151,9 @@ pipelines:
         configuration:
           releaseName: ui-service
           helmVersion: 3
+          dryRun: true
+          lint: true
+          lintFlags: "--strict"
           integrations:
             - name: tomj_gke_cluster #SolEngUS
             - name: gcp_service_account_for_gke_cluster # GCP Service Account JSON Key
@@ -176,8 +179,6 @@ pipelines:
             - kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=config-server -n default --timeout=600s
             - kubectl get pods --namespace default
           onComplete: #always
-            - helm lint
-            - helm template
             - add_run_variables pod_name="$(kubectl get pods --no-headers=true | awk '/ui-service/{print $1}')"
             #- add_run_variables pod_ip="$(kubectl describe pod $pod_name | grep "IP:" | awk '{print $2}')"
             - add_run_variables pod_ip="$(kubectl describe service ui-service | grep "LoadBalancer Ingress" | awk '{print $3}')"
