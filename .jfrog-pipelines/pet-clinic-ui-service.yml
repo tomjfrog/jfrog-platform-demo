@@ -143,6 +143,9 @@ pipelines:
             - sed -i "s/0.1.0/0.$run_number.0/g" Chart.yaml
             - sed -i "s/1.1/$triggerBuildInfoNumber/" values.yaml
             - sed -i "s/0.19.0/0.${res_PetClinicDiscoveryServerPromotedHelmBuildInfo_buildNumber}.0/" requirements.yaml
+          onComplete:
+            - helm lint
+            - helm template
       - name: deploy_helm
         type: HelmDeploy
         configuration:
@@ -173,6 +176,8 @@ pipelines:
             - kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=config-server -n default --timeout=600s
             - kubectl get pods --namespace default
           onComplete: #always
+            - helm lint
+            - helm template
             - add_run_variables pod_name="$(kubectl get pods --no-headers=true | awk '/ui-service/{print $1}')"
             #- add_run_variables pod_ip="$(kubectl describe pod $pod_name | grep "IP:" | awk '{print $2}')"
             - add_run_variables pod_ip="$(kubectl describe service ui-service | grep "LoadBalancer Ingress" | awk '{print $3}')"
