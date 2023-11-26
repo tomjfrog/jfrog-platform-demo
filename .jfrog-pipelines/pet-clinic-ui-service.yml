@@ -152,7 +152,6 @@ pipelines:
           releaseName: ui-service
           helmVersion: 3
           dryRun: true
-          lint: true
           lintFlags: "--strict"
           integrations:
             - name: tomj_gke_cluster #SolEngUS
