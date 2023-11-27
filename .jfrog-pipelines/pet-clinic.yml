@@ -28,6 +28,7 @@
            chartPath: pet-clinic
            autoPublishBuildInfo: true
            flags: "-u"
+           helmVersion: 3
            inputResources:
              - name: PetClinicProjectGitRepo
                trigger: false
@@ -72,6 +73,7 @@
          type: HelmDeploy
          configuration:
            releaseName: pet-clinic
+           helmVersion: 3
            integrations:
              - name: tomj_gke_cluster #SolEng-Dev GCP
              - name: gcp_service_account_for_gke_cluster # GCP Service Account JSON Key
