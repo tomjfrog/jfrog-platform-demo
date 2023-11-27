@@ -25,7 +25,7 @@
        - name: helm_build
          type: HelmPublish
          configuration:
-           chartPath: pet-clinic-chart
+           chartPath: pet-clinic
            autoPublishBuildInfo: true
            flags: "-u"
            inputResources:
@@ -51,7 +51,7 @@
              - helm init --client-only --skip-refresh
              - helm repo rm stable
              - helm repo add stable https://charts.helm.sh/stable
-             - pushd $res_PetClinicProjectGitRepo_resourcePath
+             - pushd $res_PetClinicProjectGitRepo_resourcePath/pet-clinic
              - pwd
              - ls -lah
              #- add_pipeline_variables triggerBuildInfoName="${res_myBuildInfo_buildName}"
