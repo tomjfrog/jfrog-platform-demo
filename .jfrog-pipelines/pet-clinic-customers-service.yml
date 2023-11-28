@@ -150,6 +150,7 @@ pipelines:
           helmVersion: 3
           integrations:
             - name: tomj_gke_cluster #SolEngUS
+            - name: gcp_service_account_for_gke_cluster # Encoded GCP Service Account Key
           inputResources:
             - name: PetClinicCustomersServiceHelmChart
           flags: '--namespace default --force'
