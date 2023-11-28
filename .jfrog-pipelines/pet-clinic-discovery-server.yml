@@ -173,7 +173,7 @@ pipelines:
             - gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
             - gcloud container clusters get-credentials tomj-cluster-003 --zone us-east1-c --project soleng-dev
           onSuccess:
-            - kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=config-server -n default --timeout=600s
+            - kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=discovery-server -n default --timeout=600s
             - kubectl get pods --namespace default
           onComplete: #always
             - add_run_variables pod_name="$(kubectl get pods --no-headers=true | awk '/discovery-server/{print $1}')"
